@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cıvıltı Kafe – Trambolin Süre Takibi</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0faff;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    header {
+      background-color: #007b8a;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      padding: 12px;
+      width: 100%;
+      max-width: 400px;
+      font-size: 16px;
+      border: 2px solid #007b8a;
+      border-radius: 8px;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      background-color: #007b8a;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      flex: 1 1 auto;
+      min-width: 140px;
+    }
+
+    button:hover {
+      background-color: #005f66;
+    }
+
+    .timer {
+      background: white;
+      border: 2px solid #007b8a;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 10px auto;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .timer.ended {
+      background-color: #ffe0e0;
+      border-color: #cc0000;
+    }
+
+    .timer h3 {
+      margin: 0;
+      color: #333;
+      font-size: 1.2rem;
+    }
+
+    .countdown {
+      font-size: 26px;
+      font-weight: bold;
+      margin: 10px 0;
+      color: #007b8a;
+    }
+
+    .add-btn {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>Cıvıltı Kafe – Trambolin Süre Takibi</header>
+
+  <div class="input-group">
+    <input type="text" id="name" placeholder="Müşteri Adı veya Numara">
+    <div class="buttons">
+      <button onclick="startInteraction(); addTimer(10)">10 Dakika Başlat</button>
+      <button onclick="startInteraction(); addTimer(5)">5 Dakika Başlat</button>
+    </div>
+  </div>
+
+  <div id="timers"></div>
+
+  <!-- Melodik ve mobil uyumlu alarm -->
+  <audio id="melodic-sound" preload="auto">
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/16/audio_3b207baf5e.mp3?filename=alarm-clock-short-6402.mp3" type="audio/mpeg" />
+  </audio>
+
+  <script>
+    let soundReady = false;
+
+    function startInteraction() {
+      const sound = document.getElementById("melodic-sound");
+      if (!soundReady) {
+        sound.play().then(() => {
+          sound.pause();
+          sound.currentTime = 0;
+          soundReady = true;
+        }).catch(() => {
+          // İlk etkileşimle çalmazsa hata bastırılır
+        });
+      }
+    }
+
+    function addTimer(minutes) {
+      const nameInput = document.getElementById('name');
+      const name = nameInput.value.trim();
+
+      if (!name) {
+        alert("Lütfen müşteri adı veya numarası girin.");
+        return;
+      }
+
+      nameInput.value = '';
+
+      const timerDiv = document.createElement("div");
+      timerDiv.className = "timer";
+
+      const title = document.createElement("h3");
+      title.innerText = name;
+
+      const countdown = document.createElement("div");
+      countdown.className = "countdown";
+      countdown.innerText = `${String(minutes).padStart(2, '0')}:00`;
+
+      const addBtn = document.createElement("button");
+      addBtn.innerText = "+5 Dakika Ekle";
+      addBtn.className = "add-btn";
+      addBtn.onclick = () => {
+        endTime += 5 * 60 * 1000;
+      };
+
+      timerDiv.appendChild(title);
+      timerDiv.appendChild(countdown);
+      timerDiv.appendChild(addBtn);
+      document.getElementById("timers").appendChild(timerDiv);
+
+      let endTime = new Date().getTime() + minutes * 60 * 1000;
+
+      const interval = setInterval(() => {
+        const now = new Date().getTime();
+        const diff = endTime - now;
+
+        if (diff <= 0) {
+          countdown.innerText = "Süre Bitti!";
+          timerDiv.classList.add("ended");
+          const sound = document.getElementById("melodic-sound");
+          sound.currentTime = 0;
+          sound.play();
+          clearInterval(interval);
+        } else {
+          const mins = Math.floor(diff / 60000);
+          const secs = Math.floor((diff % 60000) / 1000);
+          countdown.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+      }, 1000);
+    }
+  </script>
+
+</body>
+</html>
